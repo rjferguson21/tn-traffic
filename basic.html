@@ -82,10 +82,27 @@ map.on('load', function() {
             "type": "circle",
             "source": 'traffic',
             "paint": {
-              "circle-radius": 5,
               "circle-opacity": 0.5,
+              'circle-radius': {
+                property: year_str,
+                stops: [
+                  [10, 2],
+                  [10000, 2],
+                  [20000, 4],
+                  [30000, 6],
+                  [75000, 8]
+                ]
+              },
               "circle-color": {
-                stops: [[0, 'blue'], [1000, 'violet'], [2000, 'orange'], [3000, 'red']],
+                stops: [
+                  [0, '#8a8acb'],
+                  [2500, '#223b53'],
+                  [5000, '#3887be'],
+                  [10000, '#56b881'],
+                  [20000, '#f1f075 '],
+                  [30000, '#f9886c'],
+                  [75000, '#e55e5e']
+                ],
                 property: year_str
               }
             }
