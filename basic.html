@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8' />
+    <title></title>
+    <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.11.2/lodash.min.js'></script>
+    <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.18.0/mapbox-gl.js'></script>
+    <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.18.0/mapbox-gl.css' rel='stylesheet' />
+    <link href='main.css' rel='stylesheet' />
+    <style>
+        body { margin:0; padding:0; }
+        #map { position:absolute; top:0; bottom:0; width:100%; }
+    </style>
+</head>
+<body>
+
+<div id='map'></div>
+
+<div class='map-overlay top'>
+    <div class='map-overlay-inner'>
+        <h2>Traffic Counts 1985-2015</h2>
+        <label id='year'></label>
+        <input id='slider' type='range' min='1985' max='2015' step='1' value='1985' />
+    </div>
+    <div class='map-overlay-inner'>
+        <div id='legend' class='legend'>
+            <div>Magnitude (m)</div>
+        </div>
+    </div>
+</div>
+
+<script src='//d3js.org/d3.v3.min.js' charset='utf-8'></script>
+<script>
+mapboxgl.accessToken = 'pk.eyJ1IjoicmpmZXJndXNvbjIxIiwiYSI6IjNlODgzYmNhMTIwNDgzM2RkNWZiMWRhMjQ0ZWMwYzIyIn0.cJF0_aSQX4Z3rWZpU2pSyg';
+var map = new mapboxgl.Map({
+    container: 'map',
+    style: 'mapbox://styles/mapbox/light-v8',
+    center: [-86.7965477, 36.1547963],
+    zoom: 7
+});
+
+var popup = new mapboxgl.Popup({
+    closeOnClick: false,
+    closeButton: false
+});
+
+var legend = document.getElementById('legend');
+var yearLabel = document.getElementById('year');
+
+// Will contain the layers we wish to interact with on
+// during map mouseover and click events.
+var layerIDs = [];
+
+map.on('load', function() {
+
+    filterByYear = function(year) {
+      _.range(1985, 2014).map(function(y) {
+        if (year == y.toString() ) {
+          map.setLayoutProperty(y, 'visibility', 'visible');
+        } else {
+          map.setLayoutProperty(y, 'visibility', 'none');
+        }
+      });
+    }
+    document.getElementById('slider').addEventListener('input', function(e) {
+      var year = parseInt(e.target.value, 10);
+      filterByYear(year);
+    });
+
+    // Any request method (library or otherwise) you wish.
+    d3.json('/data/kayla_geo.json', function(err, data) {
+        map.addSource('traffic', {
+            'type': 'geojson',
+            'data': data,
+        });
+
+        _.range(1985, 2014).map(function(year) {
+          var year_str = year.toString()
+          map.addLayer({
+            "id": year_str,
+            "type": "circle",
+            "source": 'traffic',
+            "paint": {
+              "circle-radius": 5,
+              "circle-opacity": 0.5,
+              "circle-color": {
+                stops: [[0, 'blue'], [1000, 'violet'], [2000, 'orange'], [3000, 'red']],
+                property: year_str
+              }
+            }
+          });
+        });
+    });
+});
+</script>
+
+</body>
+</html>
